@@ -521,14 +521,15 @@
       display: grid;
       place-items: center;
       min-width: 0;
-      padding: 6px 0 0;
+      padding: 6px 2px 14px;
+      overflow: hidden;
     }
 
     .radar-svg {
       display: block;
-      width: min(100%, 440px);
+      width: min(100%, 420px);
       height: auto;
-      overflow: visible;
+      overflow: hidden;
     }
 
     .radar-grid {
@@ -568,6 +569,13 @@
       font-size: 10px;
       font-weight: 900;
       text-anchor: middle;
+    }
+
+    .profile-side {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+      min-width: 0;
     }
 
     .metric-hero {
@@ -979,6 +987,7 @@
       .profile-side {
         display: grid;
         gap: 12px;
+        margin-top: 0;
       }
 
       .manage-layout {
@@ -1830,11 +1839,8 @@
         elements.radarLabels.innerHTML = angles
           .map((angle, index) => {
             const labelPoint = pointAt(centerX, centerY, radius + 37, angle);
-            const valuePoint = pointAt(centerX, centerY, radius + 52, angle);
-
             return `
               <text class="radar-label" x="${labelPoint.x}" y="${labelPoint.y}">${labels[index]}</text>
-              <text class="radar-value" x="${valuePoint.x}" y="${valuePoint.y}">${Math.round(scores[index])}</text>
             `;
           })
           .join("");
