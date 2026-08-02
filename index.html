@@ -428,6 +428,106 @@
       gap: 8px;
     }
 
+    .ranking-groups {
+      display: grid;
+      gap: 14px;
+    }
+
+    .ranking-group {
+      min-width: 0;
+    }
+
+    .ranking-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+
+    .ranking-title strong {
+      font-size: 13px;
+    }
+
+    .ranking-title span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .ranking-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .ranking-row {
+      display: grid;
+      grid-template-columns: 30px 42px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      min-width: 0;
+      padding: 9px;
+      border-radius: 13px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+    }
+
+    .ranking-position {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .ranking-jersey {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      background: var(--panel-3);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .ranking-player {
+      min-width: 0;
+    }
+
+    .ranking-player strong,
+    .ranking-player span {
+      display: block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .ranking-player strong {
+      font-size: 13px;
+    }
+
+    .ranking-player span {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .ranking-value {
+      font-size: 15px;
+      font-weight: 900;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .ranking-value small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 800;
+    }
+
     .recent-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -1103,12 +1203,12 @@
             <article class="card card-pad">
               <div class="section-head">
                 <div>
-                  <div class="eyebrow">Latest</div>
-                  <h2>Recent attacks</h2>
+                  <div class="eyebrow">Current set</div>
+                  <h2>Setting options</h2>
                 </div>
                 <button id="undoInline" class="small-action" style="width:auto;padding:0 12px;">Undo</button>
               </div>
-              <div id="recentList" class="recent-list"></div>
+              <div id="setRankings" class="ranking-groups"></div>
             </article>
           </div>
         </div>
@@ -1297,7 +1397,7 @@
         selectedPrompt: byId("selectedPrompt"),
         activeCount: byId("activeCount"),
         teamSnapshot: byId("teamSnapshot"),
-        recentList: byId("recentList"),
+        setRankings: byId("setRankings"),
         profileSelect: byId("profileSelect"),
         profileTitle: byId("profileTitle"),
         profileAttempts: byId("profileAttempts"),
@@ -1670,48 +1770,94 @@
         `;
       }
 
-      function renderRecent() {
-        const recent = state.entries.slice(-7).reverse();
+      function renderSetRankings() {
+        const setEntries = state.entries.filter(
+          (entry) => entry.set === state.currentSet
+        );
 
-        if (!recent.length) {
-          elements.recentList.innerHTML =
-            '<div class="empty-state">No attacks recorded yet.</div>';
-          return;
-        }
+        const rankedPlayers = state.players
+          .filter((player) => player.active)
+          .map((player) => ({
+            player,
+            stats: calculateStats(setEntries, player.id)
+          }))
+          .filter((item) => item.stats.attempts >= 2);
 
-        elements.recentList.innerHTML = recent
-          .map((entry) => {
-            const player = getPlayer(entry.playerId);
-            const playerLabel = player
-              ? `#${player.number} ${player.name}`
-              : "Removed player";
+        const efficient = [...rankedPlayers]
+          .sort((a, b) =>
+            b.stats.netEfficiency - a.stats.netEfficiency ||
+            b.stats.killRate - a.stats.killRate ||
+            b.stats.attempts - a.stats.attempts
+          )
+          .slice(0, 3);
 
-            return `
-              <div class="recent-row">
-                <div class="recent-copy">
-                  <strong>${escapeHtml(playerLabel)} · ${
-                    OUTCOME_LABELS[entry.outcome] || entry.outcome
-                  }</strong>
-                  <span>Set ${entry.set}</span>
+        const stable = [...rankedPlayers]
+          .sort((a, b) =>
+            a.stats.errorRate - b.stats.errorRate ||
+            b.stats.attempts - a.stats.attempts ||
+            b.stats.netEfficiency - a.stats.netEfficiency
+          )
+          .slice(0, 3);
+
+        const rankingRows = (items, type) => {
+          if (!items.length) {
+            return '<div class="empty-state">Record at least 2 attacks per player.</div>';
+          }
+
+          return items
+            .map(({ player, stats }, index) => {
+              const value =
+                type === "efficient"
+                  ? percent(stats.netEfficiency)
+                  : percent(1 - stats.errorRate);
+
+              const detail =
+                type === "efficient"
+                  ? `${stats.kills} kills · ${stats.errors + stats.blocked} negative`
+                  : `${stats.errors + stats.blocked} mistakes · ${stats.attempts} attacks`;
+
+              const valueLabel =
+                type === "efficient" ? "net efficiency" : "error control";
+
+              return `
+                <div class="ranking-row">
+                  <div class="ranking-position">${index + 1}</div>
+                  <div class="ranking-jersey">#${escapeHtml(player.number || "—")}</div>
+                  <div class="ranking-player">
+                    <strong>${escapeHtml(player.name || "Unnamed")}</strong>
+                    <span>${detail}</span>
+                  </div>
+                  <div class="ranking-value">
+                    ${value}
+                    <small>${valueLabel}</small>
+                  </div>
                 </div>
-                <button class="delete-entry" data-delete-entry="${entry.id}" aria-label="Delete this attack">×</button>
-              </div>
-            `;
-          })
-          .join("");
+              `;
+            })
+            .join("");
+        };
 
-        elements.recentList
-          .querySelectorAll("[data-delete-entry]")
-          .forEach((button) => {
-            button.addEventListener("click", () => {
-              state.entries = state.entries.filter(
-                (entry) => entry.id !== button.dataset.deleteEntry
-              );
-              saveState();
-              renderAll();
-              showToast("Attack removed");
-            });
-          });
+        elements.setRankings.innerHTML = `
+          <section class="ranking-group">
+            <div class="ranking-title">
+              <strong>Best option to score</strong>
+              <span>Highest net efficiency</span>
+            </div>
+            <div class="ranking-list">
+              ${rankingRows(efficient, "efficient")}
+            </div>
+          </section>
+
+          <section class="ranking-group">
+            <div class="ranking-title">
+              <strong>Most stable</strong>
+              <span>Fewest errors and blocks</span>
+            </div>
+            <div class="ranking-list">
+              ${rankingRows(stable, "stable")}
+            </div>
+          </section>
+        `;
       }
 
       function renderTrack() {
@@ -1719,7 +1865,7 @@
         renderPlayers();
         renderOutcomeButtons();
         renderTeamSnapshot();
-        renderRecent();
+        renderSetRankings();
       }
 
       function renderProfileSelect() {
