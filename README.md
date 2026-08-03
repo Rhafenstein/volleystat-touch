@@ -1,6 +1,6 @@
 # VolleyStat Touch
 
-Live volleyball hitting stats for coaches. Tap a player, tap the outcome — that's it.
+Live volleyball hitting stats for coaches. Tap a player, tap the outcome ... that's it.
 
 ### [Open the app →](https://rhafenstein.github.io/volleystat-touch/)
 
@@ -17,7 +17,7 @@ Free. No account, no sign-up, no ads.
 
 ## Put it on your phone
 
-Open the link, then add it to your home screen — on iPhone or iPad, tap Share
+Open the link, then add it to your home screen ... on iPhone or iPad, tap Share
 then **Add to Home Screen**.
 
 It then opens like a normal app and **works without internet**, so it keeps
@@ -32,9 +32,7 @@ data deletes them. Use **Export CSV** in Settings to keep a copy.
 
 ## Support
 
-VolleyStat is free and always will be — there's no paid version and nothing is
-locked away.
+VolleyStat is free and always will be :D
 
 If it's made your season easier and you'd like to say thanks, you can
-[do that here](https://paypal.me/volleystat). Entirely optional, and the app
-works exactly the same either way.
+[do that here](https://paypal.me/volleystat). <3
