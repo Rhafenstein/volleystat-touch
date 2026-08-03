@@ -1,4 +1,4 @@
-const CACHE_NAME = "volleystat-touch-v8";
+const CACHE_NAME = "volleystat-touch-v9";
 const APP_FILES = [
   "./",
   "./index.html",

@@ -133,6 +133,14 @@
       outline-offset: 3px;
     }
 
+    .start.secondary {
+      margin-top: 10px;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-weight: 700;
+    }
+
     .free {
       margin: 18px 0 0;
       color: var(--muted);
@@ -222,7 +230,8 @@
     </div>
 
     <a class="start" id="start" href="app.html">Start tracking</a>
-    <p class="free">Free for every coach</p>
+    <a class="start secondary" id="newMatch" href="app.html?new=1" hidden>New match</a>
+    <p class="free" id="free">Free for every coach</p>
 
     <p class="install" id="install" hidden>
       On iPhone or iPad, tap Share then <strong>Add to Home Screen</strong> to open it like an app.
@@ -273,9 +282,32 @@
         if (meta) meta.setAttribute("content", "#0b0f0c");
       }
 
-      if (saved && Array.isArray(saved.entries) && saved.entries.length > 0) {
+      const newMatch = document.getElementById("newMatch");
+      const free = document.getElementById("free");
+
+      const hasMatch =
+        saved && Array.isArray(saved.entries) && saved.entries.length > 0;
+
+      if (hasMatch) {
         const name = String(saved.matchName || "").trim();
+        const attacks = saved.entries.length;
+        const sets = Array.isArray(saved.sets) ? saved.sets.length : 1;
+
         start.textContent = name ? `Continue · ${name}` : "Continue match";
+        newMatch.hidden = false;
+        free.textContent = `${attacks} attack${attacks === 1 ? "" : "s"} recorded across ${sets} set${sets === 1 ? "" : "s"}`;
+
+        newMatch.addEventListener("click", (event) => {
+          const confirmed = window.confirm(
+            "Start a new match?\n\nThe current match will be cleared from this device. Your players are kept. Export a CSV first if you want to keep the data."
+          );
+
+          if (!confirmed) {
+            event.preventDefault();
+          }
+        });
+      } else {
+        start.textContent = "Start tracking";
       }
 
       const standalone =

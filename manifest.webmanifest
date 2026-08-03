@@ -2,7 +2,7 @@
   "name": "VolleyStat Touch",
   "short_name": "VolleyStat",
   "description": "Mobile-first live volleyball hitting statistics tracker.",
-  "start_url": "./app.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#07111f",

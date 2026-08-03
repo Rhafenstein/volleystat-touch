@@ -1548,6 +1548,22 @@
       });
 
       let state = loadState();
+
+      /* Arriving from the landing page's "New match" button: clear the match
+         but keep the roster, the theme and everything else. */
+      if (new URLSearchParams(location.search).get("new") === "1") {
+        state.entries = [];
+        state.sets = [1];
+        state.currentSet = 1;
+        state.selectedPlayerId = null;
+        state.profileSelection = state.players.length
+          ? state.players[0].id
+          : null;
+        state.matchName = "New Match";
+        state.activeTab = "track";
+        saveState();
+        window.history.replaceState({}, "", location.pathname);
+      }
       let tapLocked = false;
       let pendingConfirmAction = null;
 

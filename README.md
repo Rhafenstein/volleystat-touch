@@ -11,9 +11,9 @@ screen on iPhone or iPad.
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | Landing page. Start / continue button, donation link, install hint. |
+| `index.html` | Home screen. Continue or start a new match, donation link, install hint. |
 | `app.html` | The tracker itself — all screens, styles and logic. |
-| `manifest.webmanifest` | PWA metadata. `start_url` points at `app.html`. |
+| `manifest.webmanifest` | PWA metadata. `start_url` points at `index.html`, so every cold launch lands on the home screen. |
 | `service-worker.js` | Offline cache. Bump `CACHE_NAME` on every deploy. |
 | `icon-180.png`, `icon-512.png` | Home screen icons. |
 
@@ -26,6 +26,13 @@ const DONATE_URL = "https://www.paypal.com/paypalme/yourname";
 ```
 
 Leave it as an empty string to hide the Support links entirely.
+
+## Opening the app
+
+Every cold launch opens `index.html`. If a match is in progress it offers
+**Continue**, with **New match** underneath. New match navigates to
+`app.html?new=1`, which clears the entries, sets and match name while keeping
+the roster and theme, then rewrites the URL so a refresh does not clear again.
 
 ## Screens
 
@@ -64,6 +71,12 @@ Stages: 0–24 Cold · 25–49 Building · 50–69 Hot · 70–84 Very Hot · 85
 
 **Best option to score** ranks by kill rate. **Most stable** ranks by fewest
 errors and blocks. Both need at least two attacks from a player.
+
+## Deploying
+
+Push to the repository and enable GitHub Pages on the `main` branch. Increment
+`CACHE_NAME` in `service-worker.js` whenever you change `index.html` or
+`app.html`, or returning devices will keep serving the cached version.
 
 ## Data
 
