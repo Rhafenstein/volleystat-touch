@@ -32,5 +32,9 @@ data deletes them. Use **Export CSV** in Settings to keep a copy.
 
 ## Support
 
-VolleyStat is free and always will be. If it helps you and your team, you can
-[chip in here](https://paypal.me/volleystat).
+VolleyStat is free and always will be — there's no paid version and nothing is
+locked away.
+
+If it's made your season easier and you'd like to say thanks, you can
+[do that here](https://paypal.me/volleystat). Entirely optional, and the app
+works exactly the same either way.
