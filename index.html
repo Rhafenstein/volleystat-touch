@@ -6,33 +6,34 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#07111f" />
+  <meta name="description" content="VolleyStat Touch is a free, offline volleyball hitting statistics tracker for coaches. Two taps per attack, live Heat Scores and setting options." />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="icon-180.png" />
-  <title>VolleyStat Touch</title>
+  <title>VolleyStat Touch — live volleyball hitting stats</title>
   <style>
     :root {
       --bg: #07111f;
       --panel: #0d1929;
       --panel-2: #111f32;
-      --panel-3: #16263b;
       --line: #223650;
       --text: #f4f7fb;
       --muted: #8fa3bd;
       --accent: #74a7ff;
-      --accent-soft: rgba(116, 167, 255, 0.14);
-      --kill: #28b86f;
-      --continue: #4d8dff;
-      --error: #ef5b67;
-      --blocked: #f29b3d;
-      --danger: #ef5b67;
       --radius: 20px;
-      --shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
-      --bottom-nav-height: 72px;
     }
 
-    * {
-      box-sizing: border-box;
+    [data-theme="tactical"] {
+      --bg: #0b0f0c;
+      --panel: #0e150f;
+      --panel-2: #101a12;
+      --line: #1f3326;
+      --text: #d3e8d8;
+      --muted: #5c8f6d;
+      --accent: #7df3a4;
+      --radius: 0px;
     }
+
+    * { box-sizing: border-box; }
 
     html {
       color-scheme: dark;
@@ -42,2488 +43,256 @@
     body {
       margin: 0;
       min-height: 100vh;
-      overflow-x: hidden;
-      background:
-        radial-gradient(circle at top right, rgba(74, 126, 220, 0.12), transparent 34rem),
-        var(--bg);
+      display: grid;
+      place-items: center;
+      padding:
+        calc(28px + env(safe-area-inset-top))
+        18px
+        calc(28px + env(safe-area-inset-bottom));
+      background: var(--bg);
       color: var(--text);
       font-family:
         Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Display",
         "Segoe UI", sans-serif;
       -webkit-font-smoothing: antialiased;
-      padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 12px);
     }
 
-    button,
-    input,
-    select {
-      font: inherit;
+    [data-theme="tactical"] body {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
     }
 
-    button {
-      border: 0;
-      color: inherit;
-      cursor: pointer;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
+    .shell {
+      width: min(400px, 100%);
+      text-align: center;
     }
 
-    button:focus-visible,
-    input:focus-visible,
-    select:focus-visible {
-      outline: 3px solid rgba(116, 167, 255, 0.55);
-      outline-offset: 2px;
+    .mark {
+      width: 84px;
+      height: 84px;
+      margin-bottom: 22px;
     }
 
-    input,
-    select {
-      min-width: 0;
-      color: var(--text);
-      border: 1px solid var(--line);
-      background: var(--panel-2);
-      border-radius: 12px;
-    }
-
-    .app {
-      width: min(1180px, 100%);
-      margin: 0 auto;
-      padding: 10px;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 92px 52px;
-      gap: 8px;
-      align-items: center;
-      padding:
-        calc(8px + env(safe-area-inset-top))
-        8px
-        9px;
-      margin: -10px -10px 12px;
-      background: rgba(7, 17, 31, 0.94);
-      border-bottom: 1px solid rgba(34, 54, 80, 0.82);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
-
-    .match-name {
-      width: 100%;
-      height: 48px;
-      padding: 0 13px;
-      font-weight: 700;
-      font-size: 16px;
-    }
-
-    .set-select {
-      width: 100%;
-      height: 48px;
-      padding: 0 9px;
-      font-weight: 700;
-    }
-
-    .icon-button {
-      width: 52px;
-      height: 48px;
-      border-radius: 12px;
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-      font-size: 20px;
-      font-weight: 800;
-    }
-
-    .screen {
-      display: none;
-      min-width: 0;
-    }
-
-    .screen.active {
-      display: block;
-    }
-
-    .stack {
-      display: grid;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .card {
-      min-width: 0;
-      overflow: hidden;
-      background: rgba(13, 25, 41, 0.96);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
-    .card-pad {
-      padding: 14px;
-    }
-
-    .section-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .section-head h2,
-    .section-head h3 {
+    h1 {
       margin: 0;
-      font-size: 17px;
-      line-height: 1.2;
-    }
-
-    .eyebrow {
-      margin-bottom: 4px;
-      color: var(--muted);
-      font-size: 11px;
+      font-size: 30px;
       font-weight: 800;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
+      letter-spacing: -0.02em;
     }
 
-    .muted {
+    .tagline {
+      margin: 10px 0 30px;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 15px;
+      line-height: 1.5;
     }
 
-    .selected-summary {
-      position: relative;
+    .points {
       display: grid;
-      gap: 12px;
-      padding: 16px;
-      background:
-        linear-gradient(145deg, rgba(116, 167, 255, 0.12), transparent 55%),
-        var(--panel);
-    }
-
-    .selected-main {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 12px;
-      align-items: center;
-      min-width: 0;
-    }
-
-    .jersey-badge {
-      display: grid;
-      place-items: center;
-      width: 58px;
-      height: 58px;
-      border-radius: 17px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      border: 1px solid rgba(116, 167, 255, 0.34);
-      font-size: 22px;
-      font-weight: 900;
-    }
-
-    .selected-name {
-      min-width: 0;
-    }
-
-    .selected-name strong {
-      display: block;
-      overflow: hidden;
-      font-size: 20px;
-      line-height: 1.15;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .selected-name span {
-      display: block;
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .heat-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-    }
-
-    .heat-pill {
-      display: inline-flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 7px;
-      max-width: 100%;
-      min-height: 42px;
-      padding: 9px 12px;
-      border-radius: 14px;
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-      font-weight: 800;
-      line-height: 1.2;
-    }
-
-    .heat-pill[data-stage="building"] {
-      border-color: rgba(242, 155, 61, 0.44);
-      background: rgba(242, 155, 61, 0.10);
-    }
-
-    .heat-pill[data-stage="hot"],
-    .heat-pill[data-stage="very-hot"] {
-      border-color: rgba(239, 91, 103, 0.47);
-      background: rgba(239, 91, 103, 0.11);
-    }
-
-    .heat-pill[data-stage="on-fire"] {
-      border-color: rgba(239, 91, 103, 0.72);
-      background: rgba(239, 91, 103, 0.17);
-    }
-
-    .heat-emoji {
-      font-size: 20px;
-      line-height: 1;
-    }
-
-    .heat-pill[data-stage="very-hot"] .heat-emoji,
-    .heat-pill[data-stage="on-fire"] .heat-emoji {
-      font-size: 23px;
-    }
-
-    .efficiency-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      min-height: 42px;
-      padding: 9px 12px;
-      border-radius: 14px;
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-      font-weight: 800;
-    }
-
-    .efficiency-chip.good {
-      color: #65d99c;
-      border-color: rgba(40, 184, 111, 0.38);
-      background: rgba(40, 184, 111, 0.10);
-    }
-
-    .efficiency-chip.bad {
-      color: #ff8991;
-      border-color: rgba(239, 91, 103, 0.40);
-      background: rgba(239, 91, 103, 0.10);
-    }
-
-    .player-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 9px;
-    }
-
-    .player-button {
-      min-width: 0;
-      min-height: 66px;
-      display: grid;
-      grid-template-columns: 42px minmax(0, 1fr);
-      gap: 9px;
-      align-items: center;
-      padding: 8px 10px;
-      border-radius: 15px;
-      background: var(--panel-2);
-      border: 1px solid var(--line);
+      gap: 2px;
+      margin-bottom: 30px;
       text-align: left;
     }
 
-    .player-button.selected {
-      border-color: var(--accent);
-      background: var(--accent-soft);
-      box-shadow: inset 0 0 0 1px rgba(116, 167, 255, 0.22);
-    }
-
-    .player-number {
-      display: grid;
-      place-items: center;
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: var(--panel-3);
-      color: var(--accent);
-      font-weight: 900;
-    }
-
-    .player-copy {
-      min-width: 0;
-    }
-
-    .player-copy strong,
-    .player-copy span {
-      display: block;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .player-copy strong {
-      font-size: 14px;
-    }
-
-    .player-copy span {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .outcome-shell {
-      position: sticky;
-      bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 8px);
-      z-index: 20;
-      padding: 10px;
-      margin: 0 -2px;
-      border-radius: 20px;
-      background: rgba(7, 17, 31, 0.92);
-      border: 1px solid rgba(34, 54, 80, 0.88);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-    }
-
-    .outcome-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 9px;
-    }
-
-    .outcome {
-      min-width: 0;
-      min-height: 76px;
-      border-radius: 16px;
-      padding: 11px;
-      color: #fff;
-      font-weight: 900;
-      font-size: 17px;
-      opacity: 0.40;
-      pointer-events: none;
-    }
-
-    .outcome.enabled {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .outcome small {
-      display: block;
-      margin-top: 4px;
-      color: rgba(255, 255, 255, 0.78);
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .outcome.kill { background: var(--kill); }
-    .outcome.continue { background: var(--continue); }
-    .outcome.error { background: var(--error); }
-    .outcome.blocked { background: var(--blocked); }
-
-    .recent-list {
-      display: grid;
-      gap: 8px;
-    }
-
-    .ranking-groups {
-      display: grid;
-      gap: 14px;
-    }
-
-    .ranking-group {
-      min-width: 0;
-    }
-
-    .ranking-title {
+    .point {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 7px;
-    }
-
-    .ranking-title strong {
-      font-size: 13px;
-    }
-
-    .ranking-title span {
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 800;
-    }
-
-    .ranking-list {
-      display: grid;
-      gap: 7px;
-    }
-
-    .ranking-row {
-      display: grid;
-      grid-template-columns: 30px 42px minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: center;
-      min-width: 0;
-      padding: 9px;
-      border-radius: 13px;
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-    }
-
-    .ranking-position {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 900;
-      text-align: center;
-    }
-
-    .ranking-jersey {
-      display: grid;
-      place-items: center;
-      width: 42px;
-      height: 42px;
-      border-radius: 11px;
-      background: var(--panel-3);
-      color: var(--accent);
-      font-size: 13px;
-      font-weight: 900;
-    }
-
-    .ranking-player {
-      min-width: 0;
-    }
-
-    .ranking-player strong,
-    .ranking-player span {
-      display: block;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .ranking-player strong {
-      font-size: 13px;
-    }
-
-    .ranking-player span {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 10px;
-    }
-
-    .ranking-value {
+      gap: 13px;
+      padding: 11px 0;
       font-size: 15px;
-      font-weight: 900;
-      text-align: right;
-      white-space: nowrap;
     }
 
-    .ranking-value small {
-      display: block;
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 9px;
-      font-weight: 800;
-    }
-
-    .recent-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 10px;
-      align-items: center;
-      min-width: 0;
-      padding: 10px;
-      border-radius: 13px;
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-    }
-
-    .recent-copy {
-      min-width: 0;
-    }
-
-    .recent-copy strong,
-    .recent-copy span {
-      display: block;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .recent-copy strong {
-      font-size: 13px;
-    }
-
-    .recent-copy span {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .delete-entry {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: rgba(239, 91, 103, 0.12);
-      color: #ff8991;
-      border: 1px solid rgba(239, 91, 103, 0.28);
-      font-size: 19px;
-      font-weight: 900;
-    }
-
-    .profile-controls {
-      display: grid;
-      gap: 10px;
-    }
-
-    .profile-controls label {
-      display: grid;
-      gap: 6px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .profile-controls select {
-      width: 100%;
-      height: 48px;
-      padding: 0 12px;
-      color: var(--text);
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .segmented {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      padding: 4px;
-      border-radius: 14px;
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-    }
-
-    .segment {
-      min-height: 42px;
-      border-radius: 10px;
-      background: transparent;
-      color: var(--muted);
-      font-weight: 800;
-    }
-
-    .segment.active {
-      background: var(--accent);
-      color: #07111f;
-    }
-
-    .radar-wrap {
-      display: grid;
-      place-items: center;
-      min-width: 0;
-      padding: 6px 2px 14px;
-      overflow: hidden;
-    }
-
-    .radar-svg {
-      display: block;
-      width: min(100%, 420px);
-      height: auto;
-      overflow: hidden;
-    }
-
-    .radar-grid {
-      fill: none;
-      stroke: var(--line);
-      stroke-width: 1;
-    }
-
-    .radar-axis {
-      stroke: var(--line);
-      stroke-width: 1;
-    }
-
-    .radar-area {
-      fill: rgba(116, 167, 255, 0.20);
-      stroke: var(--accent);
-      stroke-width: 2.4;
-      vector-effect: non-scaling-stroke;
-    }
-
-    .radar-dot {
-      fill: var(--accent);
-      stroke: var(--panel);
-      stroke-width: 2;
-      vector-effect: non-scaling-stroke;
-    }
-
-    .radar-label {
-      fill: var(--muted);
-      font-size: 11px;
-      font-weight: 800;
-      text-anchor: middle;
-    }
-
-    .radar-value {
-      fill: var(--text);
-      font-size: 10px;
-      font-weight: 900;
-      text-anchor: middle;
-    }
-
-    .profile-side {
-      display: grid;
-      gap: 12px;
-      margin-top: 12px;
-      min-width: 0;
-    }
-
-    .metric-hero {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-      padding: 15px;
-      border-radius: 17px;
-      background: var(--accent-soft);
-      border: 1px solid rgba(116, 167, 255, 0.31);
-    }
-
-    .metric-hero strong {
-      font-size: 30px;
-      line-height: 1;
-    }
-
-    .metric-hero span {
-      display: block;
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .rating-badge {
-      padding: 8px 10px;
-      border-radius: 999px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      font-size: 12px;
-      font-weight: 900;
-    }
-
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 9px;
-    }
-
-    .metric-card {
-      min-width: 0;
-      padding: 13px;
-      border-radius: 16px;
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-    }
-
-    .metric-card span {
-      display: block;
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 800;
-      line-height: 1.2;
-    }
-
-    .metric-card strong {
-      display: block;
-      margin-top: 8px;
-      overflow: hidden;
-      font-size: 22px;
-      line-height: 1;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .metric-card small {
-      display: block;
-      margin-top: 7px;
-      color: var(--muted);
-      font-size: 10px;
-    }
-
-    .breakdown {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 6px;
-    }
-
-    .breakdown div {
-      min-width: 0;
-      padding: 9px 4px;
-      border-radius: 12px;
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-      text-align: center;
-    }
-
-    .breakdown strong,
-    .breakdown span {
-      display: block;
-    }
-
-    .breakdown strong {
-      font-size: 17px;
-    }
-
-    .breakdown span {
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 9px;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .manage-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .manage-player {
-      display: grid;
-      grid-template-columns: 66px minmax(0, 1fr);
-      gap: 8px;
-      padding: 11px;
-      border-radius: 16px;
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-    }
-
-    .manage-player input {
-      width: 100%;
-      height: 44px;
-      padding: 0 10px;
-    }
-
-    .manage-actions {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 7px;
-    }
-
-    .small-action {
-      min-width: 0;
-      min-height: 42px;
-      border-radius: 11px;
-      background: var(--panel-3);
-      border: 1px solid var(--line);
-      font-size: 12px;
-      font-weight: 900;
-    }
-
-    .small-action.active {
-      color: #65d99c;
-    }
-
-    .small-action.remove {
-      color: #ff8991;
-    }
-
-    .primary-button,
-    .secondary-button,
-    .danger-button {
-      width: 100%;
-      min-height: 52px;
-      border-radius: 14px;
-      padding: 10px 13px;
-      font-weight: 900;
-    }
-
-    .primary-button {
-      background: var(--accent);
-      color: #07111f;
-    }
-
-    .secondary-button {
-      background: var(--panel-2);
-      border: 1px solid var(--line);
-    }
-
-    .danger-button {
-      color: #ff8991;
-      background: rgba(239, 91, 103, 0.10);
-      border: 1px solid rgba(239, 91, 103, 0.30);
-    }
-
-    .action-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 9px;
-    }
-
-    .bottom-nav {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      z-index: 50;
-      height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
-      background: rgba(7, 17, 31, 0.96);
-      border-top: 1px solid var(--line);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-    }
-
-    .nav-button {
-      display: grid;
-      place-items: center;
-      align-content: center;
-      gap: 3px;
-      min-width: 0;
-      border-radius: 13px;
-      background: transparent;
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    .nav-button .nav-icon {
-      font-size: 20px;
-      line-height: 1;
-    }
-
-    .nav-button.active {
-      background: var(--accent-soft);
+    .point svg {
+      flex: none;
+      width: 21px;
+      height: 21px;
       color: var(--accent);
     }
 
-    .empty-state {
-      padding: 18px 8px;
-      color: var(--muted);
-      text-align: center;
-      font-size: 13px;
-    }
-
-    .toast {
-      position: fixed;
-      right: 12px;
-      bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 14px);
-      left: 12px;
-      z-index: 100;
-      max-width: 420px;
-      margin: 0 auto;
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: #f4f7fb;
-      color: #07111f;
-      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.32);
-      font-size: 13px;
-      font-weight: 900;
-      text-align: center;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateY(15px);
-      transition: 160ms ease;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 120;
-      display: none;
-      place-items: end center;
-      padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
-      background: rgba(0, 0, 0, 0.58);
-    }
-
-    .modal-backdrop.open {
-      display: grid;
-    }
-
-    .modal {
-      width: min(100%, 460px);
+    .start {
+      display: block;
+      width: 100%;
       padding: 18px;
-      border-radius: 22px;
-      background: var(--panel);
-      border: 1px solid var(--line);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
+      border-radius: 16px;
+      background: var(--accent);
+      color: var(--bg);
+      font-size: 17px;
+      font-weight: 800;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .modal h2 {
-      margin: 0;
-      font-size: 19px;
+    [data-theme="tactical"] .start {
+      border-radius: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
     }
 
-    .modal p {
-      margin: 9px 0 16px;
+    .start:focus-visible,
+    .support:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .free {
+      margin: 18px 0 0;
       color: var(--muted);
+      font-size: 13px;
+    }
+
+    .install {
+      margin: 26px 0 0;
+      padding: 13px 15px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    [data-theme="tactical"] .install { border-radius: 0; }
+
+    .footer {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .support {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
       font-size: 14px;
-      line-height: 1.45;
+      font-weight: 700;
+      text-decoration: none;
     }
 
-    .modal-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 9px;
+    .support svg {
+      width: 16px;
+      height: 16px;
     }
 
-    @media (min-width: 680px) {
-      .app {
-        padding: 14px;
-      }
-
-      .topbar {
-        grid-template-columns: minmax(0, 1fr) 110px 56px;
-        margin: -14px -14px 14px;
-        padding-right: 14px;
-        padding-left: 14px;
-      }
-
-      .player-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .outcome-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
-
-      .outcome {
-        min-height: 84px;
-      }
-
-      .profile-controls {
-        grid-template-columns: minmax(0, 1fr) 220px;
-        align-items: end;
-      }
-
-      .metric-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .manage-player {
-        grid-template-columns: 74px minmax(0, 1fr) auto;
-        align-items: center;
-      }
-
-      .manage-actions {
-        grid-column: auto;
-        grid-template-columns: repeat(5, 44px);
-      }
-
-      .small-action {
-        min-width: 44px;
-      }
-
-      .modal-backdrop {
-        place-items: center;
-      }
-    }
-
-    @media (min-width: 900px) {
-      body {
-        padding-bottom: 18px;
-      }
-
-      .app {
-        padding-bottom: 88px;
-      }
-
-      .topbar {
-        grid-template-columns: minmax(0, 1fr) 120px 60px;
-      }
-
-      .bottom-nav {
-        right: 50%;
-        left: auto;
-        width: 430px;
-        height: 64px;
-        bottom: 14px;
-        transform: translateX(50%);
-        padding: 6px;
-        border: 1px solid var(--line);
-        border-radius: 20px;
-        box-shadow: var(--shadow);
-      }
-
-      .outcome-shell {
-        position: static;
-        padding: 0;
-        margin: 0;
-        background: transparent;
-        border: 0;
-        backdrop-filter: none;
-      }
-
-      .track-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1.12fr) minmax(330px, 0.88fr);
-        gap: 14px;
-        align-items: start;
-      }
-
-      .track-main,
-      .track-side {
-        display: grid;
-        gap: 12px;
-      }
-
-      .player-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .profile-layout {
-        display: grid;
-        grid-template-columns: minmax(340px, 0.92fr) minmax(0, 1.08fr);
-        gap: 14px;
-        align-items: start;
-      }
-
-      .profile-side {
-        display: grid;
-        gap: 12px;
-        margin-top: 0;
-      }
-
-      .manage-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
-        gap: 14px;
-        align-items: start;
-      }
-
-      .manage-tools {
-        position: sticky;
-        top: 86px;
-      }
-    }
-
-    @media (max-width: 380px) {
-      .topbar {
-        grid-template-columns: minmax(0, 1fr) 82px 48px;
-      }
-
-      .player-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .breakdown {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .breakdown div:nth-child(4),
-      .breakdown div:nth-child(5) {
-        grid-column: span 1;
-      }
-
-      .metric-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      * {
-        scroll-behavior: auto !important;
-        transition: none !important;
-      }
+    .credit {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 12px;
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <input id="matchName" class="match-name" aria-label="Match name" value="New Match" />
-      <select id="setSelect" class="set-select" aria-label="Current set"></select>
-      <button id="undoTop" class="icon-button" aria-label="Undo last attack" title="Undo">↶</button>
-    </header>
+  <main class="shell">
+    <svg class="mark" viewBox="0 0 100 100" role="img" aria-label="VolleyStat Touch">
+      <rect x="6" y="6" width="88" height="88" rx="24" fill="var(--panel)" stroke="var(--accent)" stroke-width="3" />
+      <circle cx="50" cy="50" r="26" fill="none" stroke="var(--text)" stroke-width="3" />
+      <path d="M50 24 A34 34 0 0 1 50 76" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" />
+      <path d="M26 62 A34 34 0 0 1 74 62" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" />
+    </svg>
 
-    <main>
-      <section id="trackScreen" class="screen active" data-screen="track">
-        <div class="track-layout">
-          <div class="track-main">
-            <article id="selectedSummary" class="card selected-summary"></article>
+    <h1>VolleyStat Touch</h1>
+    <p class="tagline">Live hitting stats for volleyball coaches</p>
 
-            <article class="card card-pad">
-              <div class="section-head">
-                <div>
-                  <div class="eyebrow">Step 1</div>
-                  <h2>Select attacker</h2>
-                </div>
-                <span id="activeCount" class="muted"></span>
-              </div>
-              <div id="playerGrid" class="player-grid"></div>
-            </article>
-
-            <div class="outcome-shell">
-              <div class="section-head" style="margin:0 2px 9px;">
-                <div>
-                  <div class="eyebrow">Step 2</div>
-                  <h2>Record outcome</h2>
-                </div>
-                <span id="selectedPrompt" class="muted">Choose player</span>
-              </div>
-
-              <div class="outcome-grid">
-                <button class="outcome kill" data-outcome="kill">
-                  Kill
-                  <small>Point won</small>
-                </button>
-                <button class="outcome continue" data-outcome="continue">
-                  Continue
-                  <small>Ball stays live</small>
-                </button>
-                <button class="outcome error" data-outcome="error">
-                  Error
-                  <small>Hit out / net</small>
-                </button>
-                <button class="outcome blocked" data-outcome="blocked">
-                  Blocked
-                  <small>Block scores</small>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="track-side">
-            <article class="card card-pad">
-              <div class="section-head">
-                <div>
-                  <div class="eyebrow">Current set</div>
-                  <h2>Team snapshot</h2>
-                </div>
-              </div>
-              <div id="teamSnapshot"></div>
-            </article>
-
-            <article class="card card-pad">
-              <div class="section-head">
-                <div>
-                  <div class="eyebrow">Current set</div>
-                  <h2>Setting options</h2>
-                </div>
-                <button id="undoInline" class="small-action" style="width:auto;padding:0 12px;">Undo</button>
-              </div>
-              <div id="setRankings" class="ranking-groups"></div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section id="profileScreen" class="screen" data-screen="profile">
-        <div class="profile-layout">
-          <div class="stack">
-            <article class="card card-pad">
-              <div class="profile-controls">
-                <label>
-                  Player or team
-                  <select id="profileSelect"></select>
-                </label>
-
-                <div>
-                  <div class="muted" style="font-weight:800;margin-bottom:6px;">Period</div>
-                  <div class="segmented">
-                    <button class="segment active" data-scope="set">Current set</button>
-                    <button class="segment" data-scope="match">Match</button>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            <article class="card card-pad">
-              <div class="section-head">
-                <div>
-                  <div class="eyebrow">Hitting profile</div>
-                  <h2 id="profileTitle">Team</h2>
-                </div>
-                <span id="profileAttempts" class="muted"></span>
-              </div>
-
-              <div class="radar-wrap">
-                <svg id="radarSvg" class="radar-svg" viewBox="0 0 420 380" role="img" aria-labelledby="radarTitle radarDescription">
-                  <title id="radarTitle">Hitting profile radar chart</title>
-                  <desc id="radarDescription">A five-axis comparison of kill rate, error control, kill efficiency, net efficiency and kill-to-error balance.</desc>
-                  <g id="radarGrid"></g>
-                  <g id="radarAxes"></g>
-                  <polygon id="radarArea" class="radar-area" points=""></polygon>
-                  <g id="radarDots"></g>
-                  <g id="radarLabels"></g>
-                </svg>
-              </div>
-            </article>
-          </div>
-
-          <div class="profile-side">
-            <article id="profileHeatCard" class="card card-pad"></article>
-            <article id="profileMetrics" class="card card-pad"></article>
-          </div>
-        </div>
-      </section>
-
-      <section id="playersScreen" class="screen" data-screen="players">
-        <div class="manage-layout">
-          <article class="card card-pad">
-            <div class="section-head">
-              <div>
-                <div class="eyebrow">Line-up</div>
-                <h2>Players</h2>
-              </div>
-              <button id="addPlayer" class="small-action" style="width:auto;padding:0 12px;">+ Add</button>
-            </div>
-            <div id="manageList" class="manage-list"></div>
-          </article>
-
-          <div class="manage-tools stack">
-            <article class="card card-pad">
-              <div class="section-head">
-                <div>
-                  <div class="eyebrow">Sets</div>
-                  <h2>Match controls</h2>
-                </div>
-              </div>
-              <div class="action-grid">
-                <button id="addSet" class="secondary-button">Add set</button>
-                <button id="clearSet" class="secondary-button">Clear set</button>
-                <button id="exportCsv" class="secondary-button">Export CSV</button>
-                <button id="clearAll" class="danger-button">Clear all</button>
-              </div>
-              <p class="muted" style="margin:12px 0 0;line-height:1.45;">
-                Clear all removes every recorded attack and resets all Heat Scores and streaks. Player names remain.
-              </p>
-            </article>
-
-            <article class="card card-pad">
-              <div class="eyebrow">Scoring guide</div>
-              <h3 style="margin:0 0 10px;">Net efficiency</h3>
-              <div class="metric-grid">
-                <div class="metric-card"><span>Poor</span><strong>&lt;0%</strong></div>
-                <div class="metric-card"><span>Low</span><strong>0–9%</strong></div>
-                <div class="metric-card"><span>Okay</span><strong>10–19%</strong></div>
-                <div class="metric-card"><span>Good</span><strong>20–29%</strong></div>
-                <div class="metric-card"><span>Very good</span><strong>30–39%</strong></div>
-                <div class="metric-card"><span>Excellent</span><strong>40%+</strong></div>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <nav class="bottom-nav" aria-label="Main navigation">
-    <button class="nav-button active" data-tab="track">
-      <span class="nav-icon">✚</span>
-      Track
-    </button>
-    <button class="nav-button" data-tab="profile">
-      <span class="nav-icon">⌁</span>
-      Profile
-    </button>
-    <button class="nav-button" data-tab="players">
-      <span class="nav-icon">#</span>
-      Players
-    </button>
-  </nav>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-  <div id="confirmModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
-    <div class="modal">
-      <h2 id="confirmTitle">Clear all match data?</h2>
-      <p id="confirmCopy">
-        This removes every attack, Heat Score and streak. Player names and numbers will remain.
-      </p>
-      <div class="modal-actions">
-        <button id="cancelConfirm" class="secondary-button">Cancel</button>
-        <button id="acceptConfirm" class="danger-button">Clear all</button>
+    <div class="points">
+      <div class="point">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 13V5a2 2 0 0 1 4 0v7" />
+          <path d="M12 12v-2a2 2 0 0 1 4 0v2" />
+          <path d="M16 11a2 2 0 0 1 4 0v4a6 6 0 0 1-6 6h-2a6 6 0 0 1-6-6v-1a2 2 0 0 1 4 0" />
+        </svg>
+        Two taps to record an attack
+      </div>
+      <div class="point">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 3l18 18" />
+          <path d="M9.5 16.5a3.5 3.5 0 0 1 5 0" />
+          <path d="M6 13a8 8 0 0 1 3-1.9" />
+          <path d="M15 11.1A8 8 0 0 1 18 13" />
+          <path d="M3 9a13 13 0 0 1 5-3" />
+          <path d="M16 6a13 13 0 0 1 5 3" />
+        </svg>
+        Works courtside with no signal
+      </div>
+      <div class="point">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="5" y="11" width="14" height="10" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 8 0" />
+        </svg>
+        No account, no sign-up
       </div>
     </div>
-  </div>
+
+    <a class="start" id="start" href="app.html">Start tracking</a>
+    <p class="free">Free for every coach</p>
+
+    <p class="install" id="install" hidden>
+      On iPhone or iPad, tap Share then <strong>Add to Home Screen</strong> to open it like an app.
+    </p>
+
+    <div class="footer">
+      <a class="support" id="support" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 20s-7-4.4-7-9.2A4 4 0 0 1 12 8a4 4 0 0 1 7 2.8C19 15.6 12 20 12 20z" />
+        </svg>
+        Support VolleyStat
+      </a>
+      <p class="credit">Built for coaches. Keep it, share it, it stays free.</p>
+    </div>
+  </main>
 
   <script>
     (() => {
       "use strict";
 
+      /* ------------------------------------------------------------------
+         Paste your donation link here (PayPal.Me, Ko-fi, whatever you use).
+         Leave it empty to hide the support link entirely.
+      ------------------------------------------------------------------ */
+      const DONATE_URL = "https://paypal.me/volleystat";
+
       const STORAGE_KEY = "volleystat-touch-v1";
-      const OUTCOME_LABELS = {
-        kill: "Kill",
-        continue: "Continue",
-        error: "Error",
-        blocked: "Blocked"
-      };
+      const support = document.getElementById("support");
+      const start = document.getElementById("start");
+      const install = document.getElementById("install");
 
-      const createId = () => {
-        if (window.crypto && typeof window.crypto.randomUUID === "function") {
-          return window.crypto.randomUUID();
-        }
-
-        return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-      };
-
-      const makeDefaultPlayers = () =>
-        Array.from({ length: 8 }, (_, index) => ({
-          id: createId(),
-          number: String(index + 1),
-          name: `Player ${index + 1}`,
-          active: index < 6
-        }));
-
-      const defaultState = () => ({
-        matchName: "New Match",
-        currentSet: 1,
-        sets: [1],
-        players: makeDefaultPlayers(),
-        entries: [],
-        selectedPlayerId: null,
-        profileSelection: "team",
-        profileScope: "set",
-        activeTab: "track"
-      });
-
-      let state = loadState();
-      let tapLocked = false;
-      let pendingConfirmAction = null;
-
-      const byId = (id) => document.getElementById(id);
-      const elements = {
-        matchName: byId("matchName"),
-        setSelect: byId("setSelect"),
-        playerGrid: byId("playerGrid"),
-        selectedSummary: byId("selectedSummary"),
-        selectedPrompt: byId("selectedPrompt"),
-        activeCount: byId("activeCount"),
-        teamSnapshot: byId("teamSnapshot"),
-        setRankings: byId("setRankings"),
-        profileSelect: byId("profileSelect"),
-        profileTitle: byId("profileTitle"),
-        profileAttempts: byId("profileAttempts"),
-        profileHeatCard: byId("profileHeatCard"),
-        profileMetrics: byId("profileMetrics"),
-        radarGrid: byId("radarGrid"),
-        radarAxes: byId("radarAxes"),
-        radarArea: byId("radarArea"),
-        radarDots: byId("radarDots"),
-        radarLabels: byId("radarLabels"),
-        manageList: byId("manageList"),
-        toast: byId("toast"),
-        confirmModal: byId("confirmModal"),
-        confirmTitle: byId("confirmTitle"),
-        confirmCopy: byId("confirmCopy")
-      };
-
-      function loadState() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (!raw) return defaultState();
-
-          const parsed = JSON.parse(raw);
-          if (
-            !parsed ||
-            !Array.isArray(parsed.players) ||
-            !Array.isArray(parsed.entries) ||
-            !Array.isArray(parsed.sets)
-          ) {
-            return defaultState();
-          }
-
-          return {
-            ...defaultState(),
-            ...parsed
-          };
-        } catch (error) {
-          return defaultState();
-        }
+      if (DONATE_URL) {
+        support.href = DONATE_URL;
+      } else {
+        support.hidden = true;
       }
 
-      function saveState() {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        } catch (error) {
-          // The tracker remains usable if private browsing blocks storage.
-        }
+      let saved = null;
+      try {
+        saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      } catch (error) {
+        saved = null;
       }
 
-      function escapeHtml(value) {
-        return String(value ?? "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#039;");
+      if (saved && saved.theme === "tactical") {
+        document.documentElement.dataset.theme = "tactical";
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", "#0b0f0c");
       }
 
-      function escapeAttribute(value) {
-        return escapeHtml(value);
+      if (saved && Array.isArray(saved.entries) && saved.entries.length > 0) {
+        const name = String(saved.matchName || "").trim();
+        start.textContent = name ? `Continue · ${name}` : "Continue match";
       }
 
-      function percent(value) {
-        return `${(Number(value || 0) * 100).toFixed(1)}%`;
+      const standalone =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true;
+      const ios = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
+
+      if (ios && !standalone) {
+        install.hidden = false;
       }
 
-      function clamp(value, min = 0, max = 100) {
-        return Math.max(min, Math.min(max, value));
-      }
-
-      function getPlayer(playerId) {
-        return state.players.find((player) => player.id === playerId) || null;
-      }
-
-      function getEntriesForScope(scope = state.profileScope) {
-        if (scope === "set") {
-          return state.entries.filter((entry) => entry.set === state.currentSet);
-        }
-
-        return state.entries;
-      }
-
-      function calculateStats(entries, playerId = null) {
-        const filtered = playerId
-          ? entries.filter((entry) => entry.playerId === playerId)
-          : entries;
-
-        const stats = {
-          attempts: filtered.length,
-          kills: 0,
-          continues: 0,
-          errors: 0,
-          blocked: 0,
-          killRate: 0,
-          continueRate: 0,
-          errorRate: 0,
-          killEfficiency: 0,
-          netEfficiency: 0,
-          killErrorRatio: null
-        };
-
-        filtered.forEach((entry) => {
-          if (entry.outcome === "kill") stats.kills += 1;
-          if (entry.outcome === "continue") stats.continues += 1;
-          if (entry.outcome === "error") stats.errors += 1;
-          if (entry.outcome === "blocked") stats.blocked += 1;
-        });
-
-        const negative = stats.errors + stats.blocked;
-        const decisive = stats.kills + negative;
-
-        if (stats.attempts > 0) {
-          stats.killRate = stats.kills / stats.attempts;
-          stats.continueRate = stats.continues / stats.attempts;
-          stats.errorRate = negative / stats.attempts;
-          stats.netEfficiency = (stats.kills - negative) / stats.attempts;
-        }
-
-        if (decisive > 0) {
-          stats.killEfficiency = stats.kills / decisive;
-        }
-
-        if (negative > 0) {
-          stats.killErrorRatio = stats.kills / negative;
-        } else if (stats.kills > 0) {
-          stats.killErrorRatio = Infinity;
-        }
-
-        return stats;
-      }
-
-      function getNetRating(value) {
-        const pct = value * 100;
-
-        if (pct < 0) return { label: "Poor", className: "bad" };
-        if (pct < 10) return { label: "Low", className: "" };
-        if (pct < 20) return { label: "Okay", className: "" };
-        if (pct < 30) return { label: "Good", className: "good" };
-        if (pct < 40) return { label: "Very good", className: "good" };
-        return { label: "Excellent", className: "good" };
-      }
-
-      function calculateHeatForPlayer(playerId) {
-        const entries = state.entries
-          .filter((entry) => entry.playerId === playerId)
-          .slice()
-          .sort((a, b) => {
-            const aTime = Date.parse(a.timestamp || "") || 0;
-            const bTime = Date.parse(b.timestamp || "") || 0;
-            return aTime - bTime;
-          });
-
-        let heat = 0;
-        let streak = 0;
-
-        entries.forEach((entry) => {
-          const mappedOutcome =
-            entry.outcome === "kill"
-              ? "kill"
-              : entry.outcome === "continue"
-                ? "neutral"
-                : "error";
-
-          const outcomeValue = {
-            kill: 35,
-            neutral: 0,
-            error: -45
-          }[mappedOutcome] ?? 0;
-
-          heat = Math.round(clamp(heat * 0.72 + outcomeValue));
-
-          if (mappedOutcome === "kill") {
-            streak += 1;
-          } else if (mappedOutcome === "error") {
-            streak = 0;
-          }
-        });
-
-        return { heat, streak };
-      }
-
-      function getHeatStage(heat) {
-        if (heat >= 85) {
-          return { emoji: "🚨🔥", label: "On Fire", key: "on-fire" };
-        }
-
-        if (heat >= 70) {
-          return { emoji: "🔥🔥", label: "Very Hot", key: "very-hot" };
-        }
-
-        if (heat >= 50) {
-          return { emoji: "🔥", label: "Hot", key: "hot" };
-        }
-
-        if (heat >= 25) {
-          return { emoji: "🌡️", label: "Building", key: "building" };
-        }
-
-        return { emoji: "❄️", label: "Cold", key: "cold" };
-      }
-
-      function formatRatio(value) {
-        if (value === Infinity) return "Perfect";
-        if (value === null || Number.isNaN(value)) return "—";
-        return `${value.toFixed(2)}:1`;
-      }
-
-      function showToast(message) {
-        elements.toast.textContent = message;
-        elements.toast.classList.add("show");
-        window.clearTimeout(showToast.timer);
-        showToast.timer = window.setTimeout(() => {
-          elements.toast.classList.remove("show");
-        }, 1400);
-      }
-
-      function openConfirm({ title, copy, action }) {
-        pendingConfirmAction = action;
-        elements.confirmTitle.textContent = title;
-        elements.confirmCopy.textContent = copy;
-        elements.confirmModal.classList.add("open");
-      }
-
-      function closeConfirm() {
-        pendingConfirmAction = null;
-        elements.confirmModal.classList.remove("open");
-      }
-
-      function renderSetSelect() {
-        elements.setSelect.innerHTML = state.sets
-          .map(
-            (setNumber) =>
-              `<option value="${setNumber}" ${
-                setNumber === state.currentSet ? "selected" : ""
-              }>Set ${setNumber}</option>`
-          )
-          .join("");
-      }
-
-      function renderSelectedSummary() {
-        const player = getPlayer(state.selectedPlayerId);
-
-        if (!player || !player.active) {
-          elements.selectedSummary.innerHTML = `
-            <div class="selected-main">
-              <div class="jersey-badge">—</div>
-              <div class="selected-name">
-                <strong>Select an attacker</strong>
-                <span>Then tap the attack outcome below</span>
-              </div>
-            </div>
-            <div class="heat-row">
-              <div class="heat-pill" data-stage="cold">
-                <span class="heat-emoji">❄️</span>
-                <span>Heat unavailable</span>
-              </div>
-            </div>
-          `;
-          elements.selectedPrompt.textContent = "Choose player";
-          return;
-        }
-
-        const setStats = calculateStats(
-          state.entries.filter((entry) => entry.set === state.currentSet),
-          player.id
-        );
-        const rating = getNetRating(setStats.netEfficiency);
-        const heat = calculateHeatForPlayer(player.id);
-        const heatStage = getHeatStage(heat.heat);
-        const streakText =
-          heat.streak >= 2 ? ` · ${heat.streak}-kill streak` : "";
-
-        elements.selectedSummary.innerHTML = `
-          <div class="selected-main">
-            <div class="jersey-badge">#${escapeHtml(player.number || "—")}</div>
-            <div class="selected-name">
-              <strong>${escapeHtml(player.name || "Unnamed player")}</strong>
-              <span>Set ${state.currentSet} · ${setStats.attempts} attempt${
-                setStats.attempts === 1 ? "" : "s"
-              }</span>
-            </div>
-          </div>
-          <div class="heat-row">
-            <div class="heat-pill" data-stage="${heatStage.key}">
-              <span class="heat-emoji">${heatStage.emoji}</span>
-              <span>Heat · ${heatStage.label} · ${heat.heat}%${streakText}</span>
-            </div>
-            <div class="efficiency-chip ${rating.className}">
-              Net ${percent(setStats.netEfficiency)} · ${rating.label}
-            </div>
-          </div>
-        `;
-
-        elements.selectedPrompt.textContent = `#${player.number} ${player.name}`;
-      }
-
-      function renderPlayers() {
-        const activePlayers = state.players.filter((player) => player.active);
-        elements.activeCount.textContent = `${activePlayers.length} active`;
-
-        if (!activePlayers.length) {
-          elements.playerGrid.innerHTML =
-            '<div class="empty-state">No active players. Turn players on in the Players tab.</div>';
-          return;
-        }
-
-        elements.playerGrid.innerHTML = activePlayers
-          .map((player) => {
-            const stats = calculateStats(
-              state.entries.filter((entry) => entry.set === state.currentSet),
-              player.id
-            );
-
-            return `
-              <button class="player-button ${
-                state.selectedPlayerId === player.id ? "selected" : ""
-              }" data-player-id="${player.id}">
-                <span class="player-number">#${escapeHtml(player.number || "—")}</span>
-                <span class="player-copy">
-                  <strong>${escapeHtml(player.name || "Unnamed")}</strong>
-                  <span>${stats.attempts} att · ${percent(stats.netEfficiency)} net</span>
-                </span>
-              </button>
-            `;
-          })
-          .join("");
-
-        elements.playerGrid.querySelectorAll("[data-player-id]").forEach((button) => {
-          button.addEventListener("click", () => {
-            state.selectedPlayerId = button.dataset.playerId;
-            state.profileSelection = button.dataset.playerId;
-            saveState();
-            renderTrack();
-          });
+      if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./service-worker.js").catch(() => {});
         });
       }
-
-      function renderOutcomeButtons() {
-        const selectedPlayer = getPlayer(state.selectedPlayerId);
-        const enabled = Boolean(selectedPlayer && selectedPlayer.active);
-
-        document.querySelectorAll(".outcome").forEach((button) => {
-          button.classList.toggle("enabled", enabled);
-        });
-      }
-
-      function renderTeamSnapshot() {
-        const setEntries = state.entries.filter(
-          (entry) => entry.set === state.currentSet
-        );
-        const stats = calculateStats(setEntries);
-        const rating = getNetRating(stats.netEfficiency);
-
-        elements.teamSnapshot.innerHTML = `
-          <div class="metric-hero">
-            <div>
-              <strong>${percent(stats.netEfficiency)}</strong>
-              <span>Team net efficiency · ${rating.label}</span>
-            </div>
-            <div class="rating-badge">${stats.attempts} attacks</div>
-          </div>
-
-          <div class="breakdown" style="margin-top:10px;">
-            <div><strong>${stats.kills}</strong><span>Kills</span></div>
-            <div><strong>${stats.continues}</strong><span>Continues</span></div>
-            <div><strong>${stats.errors}</strong><span>Errors</span></div>
-            <div><strong>${stats.blocked}</strong><span>Blocked</span></div>
-            <div><strong>${formatRatio(stats.killErrorRatio)}</strong><span>K:E</span></div>
-          </div>
-        `;
-      }
-
-      function renderSetRankings() {
-        const setEntries = state.entries.filter(
-          (entry) => entry.set === state.currentSet
-        );
-
-        const rankedPlayers = state.players
-          .filter((player) => player.active)
-          .map((player) => ({
-            player,
-            stats: calculateStats(setEntries, player.id)
-          }))
-          .filter((item) => item.stats.attempts >= 2);
-
-        const efficient = [...rankedPlayers]
-          .sort((a, b) =>
-            b.stats.netEfficiency - a.stats.netEfficiency ||
-            b.stats.killRate - a.stats.killRate ||
-            b.stats.attempts - a.stats.attempts
-          )
-          .slice(0, 3);
-
-        const stable = [...rankedPlayers]
-          .sort((a, b) =>
-            a.stats.errorRate - b.stats.errorRate ||
-            b.stats.attempts - a.stats.attempts ||
-            b.stats.netEfficiency - a.stats.netEfficiency
-          )
-          .slice(0, 3);
-
-        const rankingRows = (items, type) => {
-          if (!items.length) {
-            return '<div class="empty-state">Record at least 2 attacks per player.</div>';
-          }
-
-          return items
-            .map(({ player, stats }, index) => {
-              const value =
-                type === "efficient"
-                  ? percent(stats.netEfficiency)
-                  : percent(1 - stats.errorRate);
-
-              const detail =
-                type === "efficient"
-                  ? `${stats.kills} kills · ${stats.errors + stats.blocked} negative`
-                  : `${stats.errors + stats.blocked} mistakes · ${stats.attempts} attacks`;
-
-              const valueLabel =
-                type === "efficient" ? "net efficiency" : "error control";
-
-              return `
-                <div class="ranking-row">
-                  <div class="ranking-position">${index + 1}</div>
-                  <div class="ranking-jersey">#${escapeHtml(player.number || "—")}</div>
-                  <div class="ranking-player">
-                    <strong>${escapeHtml(player.name || "Unnamed")}</strong>
-                    <span>${detail}</span>
-                  </div>
-                  <div class="ranking-value">
-                    ${value}
-                    <small>${valueLabel}</small>
-                  </div>
-                </div>
-              `;
-            })
-            .join("");
-        };
-
-        elements.setRankings.innerHTML = `
-          <section class="ranking-group">
-            <div class="ranking-title">
-              <strong>Best option to score</strong>
-              <span>Highest net efficiency</span>
-            </div>
-            <div class="ranking-list">
-              ${rankingRows(efficient, "efficient")}
-            </div>
-          </section>
-
-          <section class="ranking-group">
-            <div class="ranking-title">
-              <strong>Most stable</strong>
-              <span>Fewest errors and blocks</span>
-            </div>
-            <div class="ranking-list">
-              ${rankingRows(stable, "stable")}
-            </div>
-          </section>
-        `;
-      }
-
-      function renderTrack() {
-        renderSelectedSummary();
-        renderPlayers();
-        renderOutcomeButtons();
-        renderTeamSnapshot();
-        renderSetRankings();
-      }
-
-      function renderProfileSelect() {
-        const options = [
-          '<option value="team">Team</option>',
-          ...state.players.map(
-            (player) =>
-              `<option value="${player.id}">#${escapeHtml(
-                player.number || "—"
-              )} ${escapeHtml(player.name || "Unnamed")}</option>`
-          )
-        ];
-
-        elements.profileSelect.innerHTML = options.join("");
-
-        const validSelection =
-          state.profileSelection === "team" ||
-          state.players.some((player) => player.id === state.profileSelection);
-
-        if (!validSelection) {
-          state.profileSelection = "team";
-        }
-
-        elements.profileSelect.value = state.profileSelection;
-      }
-
-      function getRadarScores(stats) {
-        const negative = stats.errors + stats.blocked;
-        let ratioScore = 0;
-
-        if (negative === 0 && stats.kills > 0) {
-          ratioScore = 100;
-        } else if (negative > 0) {
-          ratioScore = clamp((stats.kills / negative / 3) * 100);
-        }
-
-        return [
-          clamp((stats.killRate / 0.6) * 100),
-          clamp((1 - stats.errorRate) * 100),
-          clamp(stats.killEfficiency * 100),
-          clamp(((stats.netEfficiency + 1) / 2) * 100),
-          ratioScore
-        ];
-      }
-
-      function pointAt(centerX, centerY, radius, angleDegrees) {
-        const radians = ((angleDegrees - 90) * Math.PI) / 180;
-        return {
-          x: centerX + radius * Math.cos(radians),
-          y: centerY + radius * Math.sin(radians)
-        };
-      }
-
-      function renderRadar(stats) {
-        const centerX = 210;
-        const centerY = 187;
-        const radius = 125;
-        const axisCount = 5;
-        const angles = Array.from(
-          { length: axisCount },
-          (_, index) => (360 / axisCount) * index
-        );
-        const labels = [
-          "Kill rate",
-          "Error control",
-          "Kill efficiency",
-          "Net efficiency",
-          "Kill : error"
-        ];
-        const scores = getRadarScores(stats);
-
-        const gridPolygons = [20, 40, 60, 80, 100]
-          .map((level) => {
-            const points = angles
-              .map((angle) => {
-                const point = pointAt(
-                  centerX,
-                  centerY,
-                  radius * (level / 100),
-                  angle
-                );
-                return `${point.x.toFixed(2)},${point.y.toFixed(2)}`;
-              })
-              .join(" ");
-
-            return `<polygon class="radar-grid" points="${points}"></polygon>`;
-          })
-          .join("");
-
-        const axes = angles
-          .map((angle) => {
-            const point = pointAt(centerX, centerY, radius, angle);
-            return `<line class="radar-axis" x1="${centerX}" y1="${centerY}" x2="${point.x}" y2="${point.y}"></line>`;
-          })
-          .join("");
-
-        const dataPoints = scores.map((score, index) =>
-          pointAt(centerX, centerY, radius * (score / 100), angles[index])
-        );
-
-        elements.radarGrid.innerHTML = gridPolygons;
-        elements.radarAxes.innerHTML = axes;
-        elements.radarArea.setAttribute(
-          "points",
-          dataPoints
-            .map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`)
-            .join(" ")
-        );
-
-        elements.radarDots.innerHTML = dataPoints
-          .map(
-            (point) =>
-              `<circle class="radar-dot" cx="${point.x}" cy="${point.y}" r="4.5"></circle>`
-          )
-          .join("");
-
-        elements.radarLabels.innerHTML = angles
-          .map((angle, index) => {
-            const labelPoint = pointAt(centerX, centerY, radius + 37, angle);
-            return `
-              <text class="radar-label" x="${labelPoint.x}" y="${labelPoint.y}">${labels[index]}</text>
-            `;
-          })
-          .join("");
-      }
-
-      function renderProfile() {
-        renderProfileSelect();
-
-        document.querySelectorAll(".segment").forEach((button) => {
-          button.classList.toggle(
-            "active",
-            button.dataset.scope === state.profileScope
-          );
-        });
-
-        const entries = getEntriesForScope();
-        const selectedPlayer =
-          state.profileSelection === "team"
-            ? null
-            : getPlayer(state.profileSelection);
-        const stats = calculateStats(
-          entries,
-          selectedPlayer ? selectedPlayer.id : null
-        );
-        const rating = getNetRating(stats.netEfficiency);
-
-        elements.profileTitle.textContent = selectedPlayer
-          ? `#${selectedPlayer.number} ${selectedPlayer.name}`
-          : "Team";
-        elements.profileAttempts.textContent = `${stats.attempts} attempt${
-          stats.attempts === 1 ? "" : "s"
-        }`;
-
-        renderRadar(stats);
-
-        if (selectedPlayer) {
-          const heat = calculateHeatForPlayer(selectedPlayer.id);
-          const stage = getHeatStage(heat.heat);
-          const streakText =
-            heat.streak >= 2 ? ` · ${heat.streak}-kill streak` : "";
-
-          elements.profileHeatCard.innerHTML = `
-            <div class="eyebrow">Live momentum</div>
-            <div class="heat-pill" data-stage="${stage.key}" style="width:100%;justify-content:center;">
-              <span class="heat-emoji">${stage.emoji}</span>
-              <span>Heat · ${stage.label} · ${heat.heat}%${streakText}</span>
-            </div>
-            <p class="muted" style="margin:10px 0 0;line-height:1.4;">
-              Heat is recent momentum, not the probability of scoring the next point.
-            </p>
-          `;
-        } else {
-          elements.profileHeatCard.innerHTML = `
-            <div class="eyebrow">Live momentum</div>
-            <div class="empty-state">Select a player to view their Heat Score and kill streak.</div>
-          `;
-        }
-
-        elements.profileMetrics.innerHTML = `
-          <div class="metric-hero">
-            <div>
-              <strong>${percent(stats.netEfficiency)}</strong>
-              <span>Net efficiency</span>
-            </div>
-            <div class="rating-badge">${rating.label}</div>
-          </div>
-
-          <div class="breakdown" style="margin-top:10px;">
-            <div><strong>${stats.kills}</strong><span>Kills</span></div>
-            <div><strong>${stats.continues}</strong><span>Continues</span></div>
-            <div><strong>${stats.errors}</strong><span>Errors</span></div>
-            <div><strong>${stats.blocked}</strong><span>Blocked</span></div>
-            <div><strong>${stats.attempts}</strong><span>Attempts</span></div>
-          </div>
-
-          <div class="metric-grid" style="margin-top:10px;">
-            <div class="metric-card">
-              <span>Kill rate</span>
-              <strong>${percent(stats.killRate)}</strong>
-              <small>Kills ÷ all attacks</small>
-            </div>
-            <div class="metric-card">
-              <span>Error rate</span>
-              <strong>${percent(stats.errorRate)}</strong>
-              <small>Errors + blocks ÷ attacks</small>
-            </div>
-            <div class="metric-card">
-              <span>Kill efficiency</span>
-              <strong>${percent(stats.killEfficiency)}</strong>
-              <small>Kills ÷ decisive attacks</small>
-            </div>
-            <div class="metric-card">
-              <span>Continue rate</span>
-              <strong>${percent(stats.continueRate)}</strong>
-              <small>Continues ÷ all attacks</small>
-            </div>
-            <div class="metric-card">
-              <span>Kill : error</span>
-              <strong>${formatRatio(stats.killErrorRatio)}</strong>
-              <small>Kills per error or block</small>
-            </div>
-            <div class="metric-card">
-              <span>Net rating</span>
-              <strong>${rating.label}</strong>
-              <small>${stats.attempts} recorded attacks</small>
-            </div>
-          </div>
-        `;
-      }
-
-      function renderManageList() {
-        elements.manageList.innerHTML = state.players
-          .map(
-            (player, index) => `
-              <div class="manage-player" data-manage-id="${player.id}">
-                <input class="number-input" value="${escapeAttribute(
-                  player.number
-                )}" aria-label="Player number" />
-                <input class="name-input" value="${escapeAttribute(
-                  player.name
-                )}" aria-label="Player name" />
-                <div class="manage-actions">
-                  <button class="small-action move-up" ${
-                    index === 0 ? "disabled" : ""
-                  } aria-label="Move player up">↑</button>
-                  <button class="small-action move-down" ${
-                    index === state.players.length - 1 ? "disabled" : ""
-                  } aria-label="Move player down">↓</button>
-                  <button class="small-action toggle-active ${
-                    player.active ? "active" : ""
-                  }" aria-label="Toggle active player">${
-                    player.active ? "On" : "Off"
-                  }</button>
-                  <button class="small-action select-player" aria-label="Select player">◎</button>
-                  <button class="small-action remove remove-player" aria-label="Remove player">×</button>
-                </div>
-              </div>
-            `
-          )
-          .join("");
-
-        elements.manageList
-          .querySelectorAll("[data-manage-id]")
-          .forEach((row) => {
-            const playerId = row.dataset.manageId;
-            const player = getPlayer(playerId);
-
-            row.querySelector(".number-input").addEventListener("input", (event) => {
-              player.number = event.target.value;
-              saveState();
-              renderTrack();
-              renderProfile();
-            });
-
-            row.querySelector(".name-input").addEventListener("input", (event) => {
-              player.name = event.target.value;
-              saveState();
-              renderTrack();
-              renderProfile();
-            });
-
-            row.querySelector(".toggle-active").addEventListener("click", () => {
-              player.active = !player.active;
-
-              if (!player.active && state.selectedPlayerId === player.id) {
-                state.selectedPlayerId = null;
-              }
-
-              saveState();
-              renderAll();
-            });
-
-            row.querySelector(".select-player").addEventListener("click", () => {
-              player.active = true;
-              state.selectedPlayerId = player.id;
-              state.profileSelection = player.id;
-              state.activeTab = "track";
-              saveState();
-              renderAll();
-              showToast(`${player.name} selected`);
-            });
-
-            row.querySelector(".move-up").addEventListener("click", () => {
-              movePlayer(player.id, -1);
-            });
-
-            row.querySelector(".move-down").addEventListener("click", () => {
-              movePlayer(player.id, 1);
-            });
-
-            row.querySelector(".remove-player").addEventListener("click", () => {
-              openConfirm({
-                title: `Remove ${player.name}?`,
-                copy:
-                  "The player will be removed from the line-up. Existing attacks remain in team totals.",
-                action: () => {
-                  state.players = state.players.filter(
-                    (candidate) => candidate.id !== player.id
-                  );
-
-                  if (state.selectedPlayerId === player.id) {
-                    state.selectedPlayerId = null;
-                  }
-
-                  if (state.profileSelection === player.id) {
-                    state.profileSelection = "team";
-                  }
-
-                  saveState();
-                  renderAll();
-                  showToast("Player removed");
-                }
-              });
-            });
-          });
-      }
-
-      function movePlayer(playerId, direction) {
-        const currentIndex = state.players.findIndex(
-          (player) => player.id === playerId
-        );
-        const nextIndex = currentIndex + direction;
-
-        if (
-          currentIndex < 0 ||
-          nextIndex < 0 ||
-          nextIndex >= state.players.length
-        ) {
-          return;
-        }
-
-        [state.players[currentIndex], state.players[nextIndex]] = [
-          state.players[nextIndex],
-          state.players[currentIndex]
-        ];
-
-        saveState();
-        renderAll();
-      }
-
-      function renderScreens() {
-        document.querySelectorAll(".screen").forEach((screen) => {
-          screen.classList.toggle(
-            "active",
-            screen.dataset.screen === state.activeTab
-          );
-        });
-
-        document.querySelectorAll(".nav-button").forEach((button) => {
-          button.classList.toggle(
-            "active",
-            button.dataset.tab === state.activeTab
-          );
-        });
-      }
-
-      function renderAll() {
-        elements.matchName.value = state.matchName;
-        renderSetSelect();
-        renderScreens();
-        renderTrack();
-        renderProfile();
-        renderManageList();
-      }
-
-      function recordOutcome(outcome) {
-        const player = getPlayer(state.selectedPlayerId);
-
-        if (!player || !player.active || tapLocked) {
-          return;
-        }
-
-        tapLocked = true;
-        window.setTimeout(() => {
-          tapLocked = false;
-        }, 240);
-
-        state.entries.push({
-          id: createId(),
-          playerId: player.id,
-          set: state.currentSet,
-          outcome,
-          timestamp: new Date().toISOString()
-        });
-
-        saveState();
-        renderAll();
-
-        const heat = calculateHeatForPlayer(player.id);
-        const stage = getHeatStage(heat.heat);
-        showToast(`${player.name}: ${OUTCOME_LABELS[outcome]} · ${stage.emoji} ${heat.heat}%`);
-      }
-
-      function undoLast() {
-        if (!state.entries.length) {
-          showToast("Nothing to undo");
-          return;
-        }
-
-        state.entries.pop();
-        saveState();
-        renderAll();
-        showToast("Last attack undone");
-      }
-
-      function addPlayer() {
-        const nextNumber = state.players.length + 1;
-        const player = {
-          id: createId(),
-          number: String(nextNumber),
-          name: `Player ${nextNumber}`,
-          active: true
-        };
-
-        state.players.push(player);
-        state.selectedPlayerId = player.id;
-        state.profileSelection = player.id;
-        saveState();
-        renderAll();
-        showToast("Player added");
-      }
-
-      function addSet() {
-        const nextSet = Math.max(0, ...state.sets) + 1;
-        state.sets.push(nextSet);
-        state.currentSet = nextSet;
-        state.selectedPlayerId = null;
-        saveState();
-        renderAll();
-        showToast(`Set ${nextSet} ready`);
-      }
-
-      function clearCurrentSet() {
-        openConfirm({
-          title: `Clear Set ${state.currentSet}?`,
-          copy:
-            "This removes every recorded attack from the current set. Heat will be recalculated from the remaining match history.",
-          action: () => {
-            state.entries = state.entries.filter(
-              (entry) => entry.set !== state.currentSet
-            );
-            saveState();
-            renderAll();
-            showToast(`Set ${state.currentSet} cleared`);
-          }
-        });
-      }
-
-      function clearAllData() {
-        openConfirm({
-          title: "Clear all match data?",
-          copy:
-            "This removes every attack and resets every player's Heat Score and kill streak. Player names and numbers will remain.",
-          action: () => {
-            state.entries = [];
-            state.currentSet = 1;
-            state.sets = [1];
-            state.selectedPlayerId = null;
-            state.profileSelection = "team";
-            saveState();
-            renderAll();
-            showToast("All match data cleared");
-          }
-        });
-      }
-
-      function exportCsv() {
-        const rows = [
-          [
-            "Match",
-            "Set",
-            "Player Number",
-            "Player Name",
-            "Attempts",
-            "Kills",
-            "Continues",
-            "Errors",
-            "Blocked",
-            "Kill Rate",
-            "Error Rate",
-            "Continue Rate",
-            "Kill Efficiency",
-            "Net Efficiency",
-            "Kill to Error Ratio",
-            "Heat",
-            "Kill Streak"
-          ]
-        ];
-
-        state.sets.forEach((setNumber) => {
-          const setEntries = state.entries.filter(
-            (entry) => entry.set === setNumber
-          );
-
-          state.players.forEach((player) => {
-            const stats = calculateStats(setEntries, player.id);
-            const heat = calculateHeatForPlayer(player.id);
-
-            rows.push([
-              state.matchName,
-              setNumber,
-              player.number,
-              player.name,
-              stats.attempts,
-              stats.kills,
-              stats.continues,
-              stats.errors,
-              stats.blocked,
-              percent(stats.killRate),
-              percent(stats.errorRate),
-              percent(stats.continueRate),
-              percent(stats.killEfficiency),
-              percent(stats.netEfficiency),
-              formatRatio(stats.killErrorRatio),
-              `${heat.heat}%`,
-              heat.streak
-            ]);
-          });
-        });
-
-        const csv = rows
-          .map((row) =>
-            row
-              .map((value) => `"${String(value ?? "").replaceAll('"', '""')}"`)
-              .join(",")
-          )
-          .join("\n");
-
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        const filename = String(state.matchName || "volleyball-match")
-          .trim()
-          .replace(/[^a-z0-9-_]+/gi, "-")
-          .replace(/^-+|-+$/g, "")
-          .toLowerCase();
-
-        link.href = url;
-        link.download = `${filename || "volleyball-match"}-stats.csv`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-        showToast("CSV exported");
-      }
-
-      elements.matchName.addEventListener("input", (event) => {
-        state.matchName = event.target.value;
-        saveState();
-      });
-
-      elements.setSelect.addEventListener("change", (event) => {
-        state.currentSet = Number(event.target.value);
-        state.selectedPlayerId = null;
-        saveState();
-        renderAll();
-      });
-
-      document.querySelectorAll(".outcome").forEach((button) => {
-        button.addEventListener("click", () => {
-          recordOutcome(button.dataset.outcome);
-        });
-      });
-
-      document.querySelectorAll(".nav-button").forEach((button) => {
-        button.addEventListener("click", () => {
-          state.activeTab = button.dataset.tab;
-          saveState();
-          renderAll();
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        });
-      });
-
-      document.querySelectorAll(".segment").forEach((button) => {
-        button.addEventListener("click", () => {
-          state.profileScope = button.dataset.scope;
-          saveState();
-          renderProfile();
-        });
-      });
-
-      elements.profileSelect.addEventListener("change", (event) => {
-        state.profileSelection = event.target.value;
-
-        if (state.profileSelection !== "team") {
-          state.selectedPlayerId = state.profileSelection;
-        }
-
-        saveState();
-        renderProfile();
-      });
-
-      byId("undoTop").addEventListener("click", undoLast);
-      byId("undoInline").addEventListener("click", undoLast);
-      byId("addPlayer").addEventListener("click", addPlayer);
-      byId("addSet").addEventListener("click", addSet);
-      byId("clearSet").addEventListener("click", clearCurrentSet);
-      byId("clearAll").addEventListener("click", clearAllData);
-      byId("exportCsv").addEventListener("click", exportCsv);
-
-      byId("cancelConfirm").addEventListener("click", closeConfirm);
-
-      byId("acceptConfirm").addEventListener("click", () => {
-        const action = pendingConfirmAction;
-        closeConfirm();
-
-        if (typeof action === "function") {
-          action();
-        }
-      });
-
-      elements.confirmModal.addEventListener("click", (event) => {
-        if (event.target === elements.confirmModal) {
-          closeConfirm();
-        }
-      });
-
-      document.addEventListener("keydown", (event) => {
-        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
-          event.preventDefault();
-          undoLast();
-        }
-
-        if (event.key === "Escape") {
-          closeConfirm();
-        }
-      });
-
-      renderAll();
     })();
-  </script>
-  <script>
-    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js").catch(() => {});
-      });
-    }
   </script>
 </body>
 </html>

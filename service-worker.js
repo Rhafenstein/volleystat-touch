@@ -1,7 +1,8 @@
-const CACHE_NAME = "volleystat-touch-v3";
+const CACHE_NAME = "volleystat-touch-v8";
 const APP_FILES = [
   "./",
   "./index.html",
+  "./app.html",
   "./manifest.webmanifest",
   "./icon-180.png",
   "./icon-512.png"
