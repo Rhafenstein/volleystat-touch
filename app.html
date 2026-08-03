@@ -1730,6 +1730,32 @@
         return { label: "Excellent", className: "good" };
       }
 
+      /* Heat Score
+         ----------------------------------------------------------------
+         A 0-100 momentum index, recalculated from raw events every time.
+
+         Decisive attacks (kill, error, blocked) move it:
+             heat = heat * 0.84 + value
+         A continue is not a failure - the ball is still live and no point
+         was conceded - so it only fades the number gently:
+             heat = heat * 0.95
+
+         Decay of 0.84 gives a half-life of about four attacks, which is
+         roughly a rotation. Kills reach the stage boundaries cleanly:
+         1 kill = 30 (Building), 2 = 55 (Hot), 3 = 76 (Very Hot),
+         4 = 94 (On Fire).
+
+         Clamped to 0-100 at every step so a bad patch can't bury a player
+         beyond recovery. Rounded once at the end rather than each step, so
+         no rounding drift accumulates.
+      ---------------------------------------------------------------- */
+      const HEAT = {
+        killValue: 30,
+        errorValue: -38,
+        decisiveDecay: 0.84,
+        continueDecay: 0.95
+      };
+
       function calculateHeatForPlayer(playerId) {
         const entries = state.entries
           .filter((entry) => entry.playerId === playerId)
@@ -1744,29 +1770,20 @@
         let streak = 0;
 
         entries.forEach((entry) => {
-          const mappedOutcome =
-            entry.outcome === "kill"
-              ? "kill"
-              : entry.outcome === "continue"
-                ? "neutral"
-                : "error";
-
-          const outcomeValue = {
-            kill: 35,
-            neutral: 0,
-            error: -45
-          }[mappedOutcome] ?? 0;
-
-          heat = Math.round(clamp(heat * 0.72 + outcomeValue));
-
-          if (mappedOutcome === "kill") {
+          if (entry.outcome === "continue") {
+            heat = heat * HEAT.continueDecay;
+          } else if (entry.outcome === "kill") {
+            heat = heat * HEAT.decisiveDecay + HEAT.killValue;
             streak += 1;
-          } else if (mappedOutcome === "error") {
+          } else {
+            heat = heat * HEAT.decisiveDecay + HEAT.errorValue;
             streak = 0;
           }
+
+          heat = clamp(heat);
         });
 
-        return { heat, streak };
+        return { heat: Math.round(heat), streak };
       }
 
       function getHeatStage(heat) {
@@ -1895,7 +1912,7 @@
           <div class="heat-row">
             <div class="heat-pill" data-stage="${heatStage.key}">
               <span class="heat-emoji">${heatStage.emoji}</span>
-              <span>Heat · ${heatStage.label} · ${heat.heat}%${streakText}</span>
+              <span>Heat ${heat.heat} · ${heatStage.label}${streakText}</span>
             </div>
             <div class="efficiency-chip ${rating.className}">
               Net ${percent(setStats.netEfficiency)} · ${rating.label}
@@ -2249,7 +2266,7 @@
             <div class="eyebrow">Live momentum</div>
             <div class="heat-pill" data-stage="${stage.key}" style="width:100%;justify-content:center;">
               <span class="heat-emoji">${stage.emoji}</span>
-              <span>Heat · ${stage.label} · ${heat.heat}%${streakText}</span>
+              <span>Heat ${heat.heat} · ${stage.label}${streakText}</span>
             </div>
             <p class="muted" style="margin:10px 0 0;line-height:1.4;">
               Heat is recent momentum, not the probability of scoring the next point.
