@@ -65,12 +65,6 @@ Stages: 0–24 Cold · 25–49 Building · 50–69 Hot · 70–84 Very Hot · 85
 **Best option to score** ranks by kill rate. **Most stable** ranks by fewest
 errors and blocks. Both need at least two attacks from a player.
 
-## Deploying
-
-Push to the repository and enable GitHub Pages on the `main` branch. Increment
-`CACHE_NAME` in `service-worker.js` whenever you change `index.html` or
-`app.html`, or returning devices will keep serving the cached version.
-
 ## Data
 
 Matches live in `localStorage` under `volleystat-touch-v1`. They do not sync
