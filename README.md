@@ -1,6 +1,6 @@
 # VolleyStat Touch
 
-Live volleyball hitting stats for coaches. Tap a player, tap the outcome ... that's it.
+Live volleyball hitting stats for coaches. Tap a player, tap the outcome    ...    that's it.
 
 ### [Open the app →](https://rhafenstein.github.io/volleystat-touch/)
 
@@ -10,7 +10,7 @@ Free. No account, no sign-up, no ads.
 
 - Records **kills, continues, errors and blocks** in two taps
 - Shows a live **Heat Score** so you can see who's hot right now
-- Tells you **who to set** — best scorers and most reliable hitters
+- Tells you **who to set** ( best scorers and most reliable hitters )
 - Tracks **kill rate, net efficiency** and more, per player and per team
 - Works across **multiple sets**, with undo
 - Exports to **CSV**
